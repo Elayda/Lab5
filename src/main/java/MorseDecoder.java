@@ -50,11 +50,23 @@ public class MorseDecoder {
          */
         int totalBinCount = (int) Math.ceil(inputFile.getNumFrames() / BIN_SIZE);
         double[] returnBuffer = new double[totalBinCount];
-
+        double summedSamples = 0;
         double[] sampleBuffer = new double[BIN_SIZE * inputFile.getNumChannels()];
         for (int binIndex = 0; binIndex < totalBinCount; binIndex++) {
+            summedSamples = 0;
             // Get the right number of samples from the inputFile
+            inputFile.readFrames(sampleBuffer, BIN_SIZE);
+            // System.out.println(sampleBuffer);
             // Sum all the samples together and store them in the returnBuffer
+            for (int summerSample = 0; summerSample < sampleBuffer.length; summerSample += 1) {
+                if (sampleBuffer[summerSample] < 0) {
+                    sampleBuffer[summerSample] *= -1;
+                }
+
+                summedSamples += sampleBuffer[summerSample];
+            }
+            System.out.println(summedSamples);
+            returnBuffer[binIndex] = summedSamples;
         }
         return returnBuffer;
     }
@@ -81,12 +93,23 @@ public class MorseDecoder {
          * There are four conditions to handle. Symbols should only be output when you see
          * transitions. You will also have to store how much power or silence you have seen.
          */
-
-        // if ispower and waspower
-        // else if ispower and not waspower
-        // else if issilence and wassilence
-        // else if issilence and not wassilence
-
+        boolean isPower = false;
+        boolean wasPower = false;
+        boolean isSilence = false;
+        boolean wasSilence = true;
+        for (int binAccess = 0; binAccess < powerMeasurements.length; binAccess += 1) {
+            if (powerMeasurements[binAccess] > POWER_THRESHOLD) {
+                wasPower = isPower;
+                isPower = true;
+            }
+            else {
+                wasPower = isPower;
+            }
+            // if ispower and waspower
+            // else if ispower and not waspower
+            // else if issilence and wassilence
+            // else if issilence and not wassilence
+        }
         return "";
     }
 
