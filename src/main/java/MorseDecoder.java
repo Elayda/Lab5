@@ -65,7 +65,7 @@ public class MorseDecoder {
 
                 summedSamples += sampleBuffer[summerSample];
             }
-           // System.out.println(summedSamples);
+            // System.out.println(summedSamples);
             returnBuffer[binIndex] = summedSamples;
         }
         return returnBuffer;
@@ -73,9 +73,10 @@ public class MorseDecoder {
 
     /** Power threshold for power or no power. You may need to modify this value. */
     private static final double POWER_THRESHOLD = 10;
-
+    // 15 works pretty good.
     /** Bin threshold for dots or dashes. Related to BIN_SIZE. You may need to modify this value. */
-    private static final int DASH_BIN_COUNT = 3;
+    private static final int DASH_BIN_COUNT = 8;
+    // 10 works pretty good.
 
     /**
      * Convert power measurements to dots, dashes, and spaces.
@@ -95,14 +96,15 @@ public class MorseDecoder {
          */
         // Assigning state variables and counters.
         boolean isPower = false;
-        boolean wasPower = false;
-        boolean isSilence = false;
-        boolean wasSilence = true;
+        boolean wasPower = true;
+        boolean isSilence = true;
+        boolean wasSilence;
         int toneLength = 0;
         int silenceLength = 0;
         String morseCodeOutputs = "";
 
         for (int binAccess = 0; binAccess < powerMeasurements.length; binAccess += 1) {
+            // System.out.println(powerMeasurements[binAccess]);
             if (powerMeasurements[binAccess] > POWER_THRESHOLD) {
                 wasPower = isPower;
                 isPower = true;
@@ -121,12 +123,11 @@ public class MorseDecoder {
             } else {
                 // else if ispower and not waspower
                 if (isPower && !wasPower) {
-                    if (toneLength > DASH_BIN_COUNT) {
-                        morseCodeOutputs += "-";
-                    } else {
-                        morseCodeOutputs += ".";
+
+                    if (silenceLength > DASH_BIN_COUNT) {
+                        morseCodeOutputs += " ";
                     }
-                    toneLength = 0;
+                    silenceLength = 0;
 
                 } else {
                     // else if issilence and wassilence
@@ -135,10 +136,14 @@ public class MorseDecoder {
                     } else {
                         // else if issilence and not wassilence
                         if (isSilence && !wasSilence) {
-                            if (silenceLength > DASH_BIN_COUNT) {
-                                morseCodeOutputs += " ";
+                            if (toneLength > DASH_BIN_COUNT) {
+                                morseCodeOutputs += "-";
+                            } else {
+                                if (toneLength > 0) {
+                                    morseCodeOutputs += ".";
+                                }
                             }
-                            silenceLength = 0;
+                            toneLength = 0;
                         }
                     }
 
