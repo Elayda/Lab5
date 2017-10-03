@@ -65,7 +65,7 @@ public class MorseDecoder {
 
                 summedSamples += sampleBuffer[summerSample];
             }
-            System.out.println(summedSamples);
+           // System.out.println(summedSamples);
             returnBuffer[binIndex] = summedSamples;
         }
         return returnBuffer;
@@ -75,7 +75,7 @@ public class MorseDecoder {
     private static final double POWER_THRESHOLD = 10;
 
     /** Bin threshold for dots or dashes. Related to BIN_SIZE. You may need to modify this value. */
-    private static final int DASH_BIN_COUNT = 8;
+    private static final int DASH_BIN_COUNT = 3;
 
     /**
      * Convert power measurements to dots, dashes, and spaces.
@@ -93,24 +93,61 @@ public class MorseDecoder {
          * There are four conditions to handle. Symbols should only be output when you see
          * transitions. You will also have to store how much power or silence you have seen.
          */
+        // Assigning state variables and counters.
         boolean isPower = false;
         boolean wasPower = false;
         boolean isSilence = false;
         boolean wasSilence = true;
+        int toneLength = 0;
+        int silenceLength = 0;
+        String morseCodeOutputs = "";
+
         for (int binAccess = 0; binAccess < powerMeasurements.length; binAccess += 1) {
             if (powerMeasurements[binAccess] > POWER_THRESHOLD) {
                 wasPower = isPower;
                 isPower = true;
-            }
-            else {
+                wasSilence = isSilence;
+                isSilence = false;
+            } else {
                 wasPower = isPower;
+                isPower = false;
+                wasSilence = isSilence;
+                isSilence = true;
             }
             // if ispower and waspower
-            // else if ispower and not waspower
-            // else if issilence and wassilence
-            // else if issilence and not wassilence
+            if (isPower && wasPower) {
+                toneLength += 1;
+
+            } else {
+                // else if ispower and not waspower
+                if (isPower && !wasPower) {
+                    if (toneLength > DASH_BIN_COUNT) {
+                        morseCodeOutputs += "-";
+                    } else {
+                        morseCodeOutputs += ".";
+                    }
+                    toneLength = 0;
+
+                } else {
+                    // else if issilence and wassilence
+                    if (isSilence && wasSilence) {
+                        silenceLength += 1;
+                    } else {
+                        // else if issilence and not wassilence
+                        if (isSilence && !wasSilence) {
+                            if (silenceLength > DASH_BIN_COUNT) {
+                                morseCodeOutputs += " ";
+                            }
+                            silenceLength = 0;
+                        }
+                    }
+
+                }
+
+            }
+
         }
-        return "";
+        return morseCodeOutputs;
     }
 
     /**
